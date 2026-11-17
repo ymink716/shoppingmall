@@ -119,6 +119,10 @@ erDiagram
     brand["브랜드 (미설계) brand"] {
         NUM brand_id PK "브랜드번호"
     }
+    cart_item["장바구니상품 (주문 회차) cart_item"] {
+        NUM customer_id PK "고객번호"
+        NUM item_id PK "단품번호"
+    }
     category["표준 카테고리 (카테고리 회차) category"] {
         NUM category_id PK "카테고리번호"
     }
@@ -126,7 +130,7 @@ erDiagram
         NUM display_category_id PK "전시카테고리번호"
         NUM product_id PK "상품번호"
     }
-    order_item["주문상품 (미설계) order_item"] {
+    order_item["주문상품 (주문 회차) order_item"] {
         NUM order_item_id PK "주문상품번호"
     }
     seller["판매자 (미설계) seller"] {
@@ -156,3 +160,5 @@ erDiagram
     product_item ||..o{ product_item_stock_hist : "재고 이력"
     order_item |o..o{ product_item_stock_hist : "주문 참조"
     product ||..|{ product_status_hist : "상태 이력"
+    product_item ||--o{ cart_item : "담긴 단품"
+    product_item ||..o{ order_item : "주문 단품"

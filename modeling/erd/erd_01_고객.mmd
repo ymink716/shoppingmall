@@ -100,8 +100,15 @@ erDiagram
         DT withdrawn_at "탈퇴일시"
         DT rejoin_available_at "재가입가능일시"
     }
+    cart_item["장바구니상품 (주문 회차) cart_item"] {
+        NUM customer_id PK "고객번호"
+        NUM item_id PK "단품번호"
+    }
     grade["등급 (미설계) grade"] {
         CODE grade_cd PK "등급코드"
+    }
+    orders["주문 (주문 회차) orders"] {
+        NUM order_id PK "주문번호"
     }
     grade ||..o{ customer : "등급"
     customer ||--|{ customer_auth : "인증수단"
@@ -113,3 +120,5 @@ erDiagram
     terms ||--o{ customer_terms_agree : "동의"
     customer ||..|{ customer_status_hist : "상태 이력"
     customer ||--o| customer_withdrawal : "탈퇴"
+    customer ||--o{ cart_item : "장바구니"
+    customer ||..o{ orders : "주문"

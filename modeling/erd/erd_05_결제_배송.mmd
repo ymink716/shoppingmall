@@ -12,6 +12,7 @@ erDiagram
         CODE pg_payment_key UK "PG결제키 (선택)"
         DT requested_at "결제요청일시"
         DT approved_at "결제승인일시 (선택)"
+        NUM claim_id FK "클레임번호 (선택)"
     }
     payment_card["카드 결제 payment_card"] {
         NUM payment_id PK, FK "결제번호"
@@ -44,6 +45,7 @@ erDiagram
         NAME result_message "결과메시지 (선택)"
         DT requested_at "요청일시"
         DT responded_at "응답일시 (선택)"
+        NUM claim_id FK "클레임번호 (선택)"
     }
     shipment["배송 shipment"] {
         NUM shipment_id PK "배송번호"
@@ -56,6 +58,7 @@ erDiagram
         CODE shipment_status_cd "배송상태코드"
         DT shipped_at "출고일시 (선택)"
         DT delivered_at "배송완료일시 (선택)"
+        NUM claim_id FK "클레임번호 (선택)"
     }
     shipment_item["배송상품 shipment_item"] {
         NUM shipment_id PK, FK "배송번호"
@@ -83,6 +86,13 @@ erDiagram
         NUM changed_by_id "처리자ID (선택)"
         DT changed_at "변경일시"
     }
+    claim["클레임 (클레임 회차) claim"] {
+        NUM claim_id PK "클레임번호"
+    }
+    claim_refund["클레임 환불 (클레임 회차) claim_refund"] {
+        NUM claim_id PK "클레임번호"
+        NUM payment_id PK "결제번호"
+    }
     order_item["주문상품 (주문 회차) order_item"] {
         NUM order_item_id PK "주문상품번호"
     }
@@ -103,3 +113,7 @@ erDiagram
     order_item ||--o{ shipment_item : "배송상품"
     shipment ||..o{ shipment_tracking_hist : "추적 이력"
     orders ||..o{ order_address_hist : "배송지 변경 이력"
+    payment ||--o{ claim_refund : "환불 배분"
+    claim_refund |o..o{ payment_transaction : "환불 거래"
+    claim |o..o{ payment : "클레임 비용 결제"
+    claim |o..o{ shipment : "회수·재배송"

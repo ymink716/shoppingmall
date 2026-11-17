@@ -126,6 +126,10 @@ erDiagram
     category["표준 카테고리 (카테고리 회차) category"] {
         NUM category_id PK "카테고리번호"
     }
+    claim_item["클레임상품 (클레임 회차) claim_item"] {
+        NUM claim_id PK "클레임번호"
+        NUM order_item_id PK "주문상품번호"
+    }
     display_category_product["전시 카테고리 상품 (카테고리 회차) display_category_product"] {
         NUM display_category_id PK "전시카테고리번호"
         NUM product_id PK "상품번호"
@@ -162,3 +166,4 @@ erDiagram
     product ||..|{ product_status_hist : "상태 이력"
     product_item ||--o{ cart_item : "담긴 단품"
     product_item ||..o{ order_item : "주문 단품"
+    product_item |o..o{ claim_item : "교환 단품"

@@ -1,0 +1,297 @@
+---
+title: 무신사 기반 쇼핑몰 ERD - 고객·카테고리·상품
+---
+erDiagram
+    customer["고객 customer"] {
+        NUM customer_id PK "고객번호"
+        UUID customer_uid UK "고객공개ID"
+        ENC customer_name "고객명 (선택) 🔒"
+        NAME nickname UK "닉네임"
+        ENC mobile_no "휴대폰번호 (선택) 🔒"
+        HASH mobile_no_hash "휴대폰번호해시 (선택)"
+        ENC contact_email "연락이메일 (선택) 🔒"
+        DATE birth_date "생년월일 (선택)"
+        CODE gender_cd "성별코드 (선택)"
+        ENC ci "CI (선택) 🔒"
+        HASH ci_hash UK "CI해시 (선택)"
+        DT identity_verified_at "본인인증일시"
+        CODE customer_status_cd "고객상태코드"
+        CODE grade_cd FK "등급코드"
+        CODE join_channel_cd "가입경로코드"
+        DT joined_at "가입일시"
+        DT last_login_at "최근로그인일시 (선택)"
+    }
+    customer_auth["고객 인증수단 customer_auth"] {
+        NUM customer_id PK, FK "고객번호"
+        CODE auth_type_cd PK "인증유형코드"
+        NAME auth_key "인증키"
+        HASH auth_key_hash UK "인증키해시"
+        NAME password_hash "비밀번호해시 (선택)"
+        DT password_changed_at "비밀번호변경일시 (선택)"
+        DT linked_at "연동일시"
+        DT last_used_at "최근사용일시 (선택)"
+    }
+    customer_address["배송지 customer_address"] {
+        NUM address_id PK "배송지번호"
+        NUM customer_id FK "고객번호"
+        NAME address_name "배송지명 (선택)"
+        ENC recipient_name "수령인명 🔒"
+        ENC recipient_mobile_no "수령인휴대폰번호 🔒"
+        CODE zip_code "우편번호"
+        NAME base_address "기본주소"
+        ENC detail_address "상세주소 (선택) 🔒"
+        NAME delivery_memo "배송요청사항 (선택)"
+        YN default_yn "기본배송지여부"
+    }
+    customer_consent["고객 수신동의 customer_consent"] {
+        NUM customer_id PK, FK "고객번호"
+        CODE channel_cd PK "수신채널코드"
+        YN agree_yn "동의여부"
+        DT changed_at "최종변경일시"
+    }
+    customer_consent_hist["수신동의 이력 customer_consent_hist"] {
+        NUM consent_hist_id PK "이력번호"
+        NUM customer_id FK "고객번호"
+        CODE channel_cd FK "수신채널코드"
+        YN agree_yn "동의여부"
+        CODE change_source_cd "변경경로코드"
+        DT changed_at "변경일시"
+    }
+    customer_body["고객 체형정보 customer_body"] {
+        NUM customer_id PK, FK "고객번호"
+        INT height_cm "키 (선택)"
+        INT weight_kg "몸무게 (선택)"
+        CODE top_size "평소상의사이즈 (선택)"
+        CODE bottom_size "평소하의사이즈 (선택)"
+        INT shoe_size "평소신발사이즈 (선택)"
+        YN public_yn "공개여부"
+        DT consent_at "수집동의일시"
+    }
+    terms["약관 terms"] {
+        NUM terms_id PK "약관번호"
+        CODE terms_type_cd UK "약관유형코드"
+        NAME version UK "버전"
+        NAME terms_title "약관명"
+        TEXT terms_content "약관내용"
+        YN required_yn "필수여부"
+        DT effective_at "시행일시"
+    }
+    customer_terms_agree["약관 동의 customer_terms_agree"] {
+        NUM customer_id PK, FK "고객번호"
+        NUM terms_id PK, FK "약관번호"
+        DT agreed_at "동의일시"
+        DT withdrawn_at "철회일시 (선택)"
+    }
+    customer_status_hist["고객 상태 이력 customer_status_hist"] {
+        NUM status_hist_id PK "이력번호"
+        NUM customer_id FK "고객번호"
+        CODE before_status_cd "이전상태코드 (선택)"
+        CODE after_status_cd "변경상태코드"
+        NAME change_reason "변경사유 (선택)"
+        CODE changed_by_type_cd "처리자구분코드"
+        NUM changed_by_id "처리자ID (선택)"
+        DT changed_at "변경일시"
+    }
+    customer_withdrawal["고객 탈퇴 customer_withdrawal"] {
+        NUM customer_id PK, FK "고객번호"
+        HASH ci_hash "CI해시"
+        CODE withdraw_reason_cd "탈퇴사유코드"
+        NAME withdraw_reason_detail "탈퇴사유상세 (선택)"
+        DT withdrawn_at "탈퇴일시"
+        DT rejoin_available_at "재가입가능일시"
+    }
+    category["표준 카테고리 category"] {
+        NUM category_id PK "카테고리번호"
+        NUM parent_category_id FK "상위카테고리번호 (선택)"
+        CODE category_code UK "카테고리코드"
+        NAME category_name UK "카테고리명"
+        INT sort_order "정렬순서"
+        YN use_yn "사용여부"
+    }
+    display_category["전시 카테고리 display_category"] {
+        NUM display_category_id PK "전시카테고리번호"
+        NUM parent_display_category_id FK "상위전시카테고리번호 (선택)"
+        CODE display_type_cd "전시유형코드"
+        NAME display_category_name "전시카테고리명"
+        INT sort_order "정렬순서"
+        YN display_yn "노출여부"
+        DT display_start_at "노출시작일시 (선택)"
+        DT display_end_at "노출종료일시 (선택)"
+        NAME image_url "대표이미지URL (선택)"
+    }
+    display_category_link["전시 카테고리 구성 display_category_link"] {
+        NUM display_category_id PK, FK "전시카테고리번호"
+        NUM category_id PK, FK "카테고리번호"
+        YN include_sub_yn "하위포함여부"
+        INT sort_order "정렬순서"
+    }
+    display_category_product["전시 카테고리 상품 display_category_product"] {
+        NUM display_category_id PK, FK "전시카테고리번호"
+        NUM product_id PK, FK "상품번호"
+        INT sort_order "정렬순서"
+    }
+    product["상품 product"] {
+        NUM product_id PK "상품번호"
+        NUM seller_id FK "판매자번호"
+        NUM brand_id FK "브랜드번호"
+        NUM category_id FK "카테고리번호"
+        CODE seller_product_code UK "판매자상품코드 (선택)"
+        NAME product_name "상품명"
+        NAME product_summary "상품요약 (선택)"
+        TEXT product_detail "상품상세설명 (선택)"
+        CODE gender_cd "성별구분코드"
+        CODE season_cd "시즌코드 (선택)"
+        AMT list_price "정가"
+        AMT sale_price "판매가"
+        CODE tax_type_cd "과세구분코드"
+        CODE product_status_cd "상품상태코드"
+        DT sale_start_at "판매시작일시 (선택)"
+        DT sale_end_at "판매종료일시 (선택)"
+        INT max_order_qty "1회최대구매수량 (선택)"
+    }
+    product_option_group["상품 옵션 그룹 product_option_group"] {
+        NUM option_group_id PK "옵션그룹번호"
+        NUM product_id FK, UK "상품번호"
+        NAME option_group_name UK "옵션그룹명"
+        CODE option_type_cd "옵션유형코드"
+        INT sort_order "정렬순서"
+    }
+    product_option_value["상품 옵션 값 product_option_value"] {
+        NUM option_value_id PK "옵션값번호"
+        NUM option_group_id FK, UK "옵션그룹번호"
+        NAME option_value_name UK "옵션값명"
+        CODE color_hex "색상코드 (선택)"
+        INT sort_order "정렬순서"
+    }
+    product_item["단품 product_item"] {
+        NUM item_id PK "단품번호"
+        NUM product_id FK, UK "상품번호"
+        CODE sku_code UK "단품코드"
+        AMT additional_price "옵션추가금액"
+        INT stock_qty "재고수량"
+        CODE item_status_cd "단품판매상태코드"
+        INT sort_order "정렬순서"
+    }
+    product_item_option["단품 옵션 구성 product_item_option"] {
+        NUM item_id PK, FK "단품번호"
+        NUM option_group_id PK, FK "옵션그룹번호"
+        NUM option_value_id FK "옵션값번호"
+    }
+    product_image["상품 이미지 product_image"] {
+        NUM image_id PK "이미지번호"
+        NUM product_id FK "상품번호"
+        NUM option_value_id FK "옵션값번호 (선택)"
+        CODE image_type_cd "이미지유형코드"
+        NAME image_url "이미지URL"
+        INT sort_order "정렬순서"
+    }
+    attribute["속성 attribute"] {
+        NUM attribute_id PK "속성번호"
+        CODE attribute_type_cd UK "속성유형코드"
+        NAME attribute_name UK "속성명"
+        CODE input_type_cd "입력방식코드"
+        NAME unit "단위 (선택)"
+        YN use_yn "사용여부"
+    }
+    attribute_option["속성 선택값 attribute_option"] {
+        NUM attribute_option_id PK "속성선택값번호"
+        NUM attribute_id FK, UK "속성번호"
+        NAME option_name UK "선택값명"
+        INT sort_order "정렬순서"
+    }
+    category_attribute["카테고리 속성 category_attribute"] {
+        NUM category_id PK, FK "카테고리번호"
+        NUM attribute_id PK, FK "속성번호"
+        YN required_yn "필수여부"
+        INT sort_order "정렬순서"
+    }
+    product_attribute_value["상품 속성값 product_attribute_value"] {
+        NUM product_id PK, FK "상품번호"
+        NUM attribute_id PK, FK "속성번호"
+        NUM attribute_option_id FK "속성선택값번호 (선택)"
+        NAME attribute_value "속성값 (선택)"
+    }
+    product_size_measure["실측 사이즈 product_size_measure"] {
+        NUM option_value_id PK, FK "옵션값번호"
+        NUM attribute_id PK, FK "속성번호"
+        DEC measure_value "측정값"
+    }
+    product_price_hist["상품 가격 이력 product_price_hist"] {
+        NUM product_id PK, FK "상품번호"
+        DT apply_start_at PK "적용시작일시"
+        DT apply_end_at "적용종료일시"
+        AMT list_price "정가"
+        AMT sale_price "판매가"
+        NAME change_reason "변경사유 (선택)"
+    }
+    product_item_stock_hist["단품 재고 이력 product_item_stock_hist"] {
+        NUM stock_hist_id PK "재고이력번호"
+        NUM item_id FK "단품번호"
+        CODE change_type_cd "변동유형코드"
+        INT change_qty "변동수량"
+        INT after_qty "변동후수량"
+        NUM order_item_id FK "참조주문상품번호 (선택)"
+        NAME change_reason "변동사유 (선택)"
+        DT changed_at "변동일시"
+    }
+    product_status_hist["상품 상태 이력 product_status_hist"] {
+        NUM status_hist_id PK "상태이력번호"
+        NUM product_id FK "상품번호"
+        CODE before_status_cd "이전상태코드 (선택)"
+        CODE after_status_cd "변경상태코드"
+        NAME change_reason "변경사유 (선택)"
+        CODE changed_by_type_cd "처리자구분코드"
+        NUM changed_by_id "처리자ID (선택)"
+        DT changed_at "변경일시"
+    }
+    brand["브랜드 (미설계) brand"] {
+        NUM brand_id PK "브랜드번호"
+    }
+    grade["등급 (미설계) grade"] {
+        CODE grade_cd PK "등급코드"
+    }
+    order_item["주문상품 (미설계) order_item"] {
+        NUM order_item_id PK "주문상품번호"
+    }
+    seller["판매자 (미설계) seller"] {
+        NUM seller_id PK "판매자번호"
+    }
+    grade ||..o{ customer : "등급"
+    customer ||--|{ customer_auth : "인증수단"
+    customer ||..o{ customer_address : "배송지"
+    customer ||--|{ customer_consent : "수신동의"
+    customer_consent ||..|{ customer_consent_hist : "변경 이력"
+    customer ||--o| customer_body : "체형정보"
+    customer ||--|{ customer_terms_agree : "동의"
+    terms ||--o{ customer_terms_agree : "동의"
+    customer ||..|{ customer_status_hist : "상태 이력"
+    customer ||--o| customer_withdrawal : "탈퇴"
+    category |o..o{ category : "상위-하위"
+    display_category |o..o{ display_category : "상위-하위"
+    display_category ||--o{ display_category_link : "구성"
+    category ||--o{ display_category_link : "구성"
+    display_category ||--o{ display_category_product : "직접 지정"
+    product ||--o{ display_category_product : "직접 지정"
+    category ||..o{ product : "분류"
+    seller ||..o{ product : "판매"
+    brand ||..o{ product : "브랜드"
+    product ||..o{ product_option_group : "옵션 그룹"
+    product_option_group ||..|{ product_option_value : "옵션 값"
+    product ||..|{ product_item : "단품"
+    product_item ||--o{ product_item_option : "옵션 구성"
+    product_option_group ||--|{ product_item_option : "옵션 구성"
+    product_option_value ||..o{ product_item_option : "선택 값"
+    product ||..|{ product_image : "이미지"
+    product_option_value |o..o{ product_image : "색상별 이미지"
+    attribute ||..o{ attribute_option : "선택값"
+    category ||--o{ category_attribute : "속성 지정"
+    attribute ||--o{ category_attribute : "속성 지정"
+    product ||--o{ product_attribute_value : "속성값"
+    attribute ||--o{ product_attribute_value : "속성값"
+    attribute_option |o..o{ product_attribute_value : "선택"
+    product_option_value ||--o{ product_size_measure : "실측"
+    attribute ||--o{ product_size_measure : "실측"
+    product ||--|{ product_price_hist : "가격 이력"
+    product_item ||..o{ product_item_stock_hist : "재고 이력"
+    order_item |o..o{ product_item_stock_hist : "주문 참조"
+    product ||..|{ product_status_hist : "상태 이력"

@@ -1,0 +1,115 @@
+---
+title: 1회차 고객 ERD
+---
+erDiagram
+    customer["고객 customer"] {
+        NUM customer_id PK "고객번호"
+        UUID customer_uid UK "고객공개ID"
+        ENC customer_name "고객명 (선택) 🔒"
+        NAME nickname UK "닉네임"
+        ENC mobile_no "휴대폰번호 (선택) 🔒"
+        HASH mobile_no_hash "휴대폰번호해시 (선택)"
+        ENC contact_email "연락이메일 (선택) 🔒"
+        DATE birth_date "생년월일 (선택)"
+        CODE gender_cd "성별코드 (선택)"
+        ENC ci "CI (선택) 🔒"
+        HASH ci_hash UK "CI해시 (선택)"
+        DT identity_verified_at "본인인증일시"
+        CODE customer_status_cd "고객상태코드"
+        CODE grade_cd FK "등급코드"
+        CODE join_channel_cd "가입경로코드"
+        DT joined_at "가입일시"
+        DT last_login_at "최근로그인일시 (선택)"
+    }
+    customer_auth["고객 인증수단 customer_auth"] {
+        NUM customer_id PK, FK "고객번호"
+        CODE auth_type_cd PK "인증유형코드"
+        NAME auth_key "인증키"
+        HASH auth_key_hash UK "인증키해시"
+        NAME password_hash "비밀번호해시 (선택)"
+        DT password_changed_at "비밀번호변경일시 (선택)"
+        DT linked_at "연동일시"
+        DT last_used_at "최근사용일시 (선택)"
+    }
+    customer_address["배송지 customer_address"] {
+        NUM address_id PK "배송지번호"
+        NUM customer_id FK "고객번호"
+        NAME address_name "배송지명 (선택)"
+        ENC recipient_name "수령인명 🔒"
+        ENC recipient_mobile_no "수령인휴대폰번호 🔒"
+        CODE zip_code "우편번호"
+        NAME base_address "기본주소"
+        ENC detail_address "상세주소 (선택) 🔒"
+        NAME delivery_memo "배송요청사항 (선택)"
+        YN default_yn "기본배송지여부"
+    }
+    customer_consent["고객 수신동의 customer_consent"] {
+        NUM customer_id PK, FK "고객번호"
+        CODE channel_cd PK "수신채널코드"
+        YN agree_yn "동의여부"
+        DT changed_at "최종변경일시"
+    }
+    customer_consent_hist["수신동의 이력 customer_consent_hist"] {
+        NUM consent_hist_id PK "이력번호"
+        NUM customer_id FK "고객번호"
+        CODE channel_cd FK "수신채널코드"
+        YN agree_yn "동의여부"
+        CODE change_source_cd "변경경로코드"
+        DT changed_at "변경일시"
+    }
+    customer_body["고객 체형정보 customer_body"] {
+        NUM customer_id PK, FK "고객번호"
+        INT height_cm "키 (선택)"
+        INT weight_kg "몸무게 (선택)"
+        CODE top_size "평소상의사이즈 (선택)"
+        CODE bottom_size "평소하의사이즈 (선택)"
+        INT shoe_size "평소신발사이즈 (선택)"
+        YN public_yn "공개여부"
+        DT consent_at "수집동의일시"
+    }
+    terms["약관 terms"] {
+        NUM terms_id PK "약관번호"
+        CODE terms_type_cd UK "약관유형코드"
+        NAME version UK "버전"
+        NAME terms_title "약관명"
+        TEXT terms_content "약관내용"
+        YN required_yn "필수여부"
+        DT effective_at "시행일시"
+    }
+    customer_terms_agree["약관 동의 customer_terms_agree"] {
+        NUM customer_id PK, FK "고객번호"
+        NUM terms_id PK, FK "약관번호"
+        DT agreed_at "동의일시"
+        DT withdrawn_at "철회일시 (선택)"
+    }
+    customer_status_hist["고객 상태 이력 customer_status_hist"] {
+        NUM status_hist_id PK "이력번호"
+        NUM customer_id FK "고객번호"
+        CODE before_status_cd "이전상태코드 (선택)"
+        CODE after_status_cd "변경상태코드"
+        NAME change_reason "변경사유 (선택)"
+        CODE changed_by_type_cd "처리자구분코드"
+        NUM changed_by_id "처리자ID (선택)"
+        DT changed_at "변경일시"
+    }
+    customer_withdrawal["고객 탈퇴 customer_withdrawal"] {
+        NUM customer_id PK, FK "고객번호"
+        HASH ci_hash "CI해시"
+        CODE withdraw_reason_cd "탈퇴사유코드"
+        NAME withdraw_reason_detail "탈퇴사유상세 (선택)"
+        DT withdrawn_at "탈퇴일시"
+        DT rejoin_available_at "재가입가능일시"
+    }
+    grade["등급 (미설계) grade"] {
+        CODE grade_cd PK "등급코드"
+    }
+    grade ||..o{ customer : "등급"
+    customer ||--|{ customer_auth : "인증수단"
+    customer ||..o{ customer_address : "배송지"
+    customer ||--|{ customer_consent : "수신동의"
+    customer_consent ||..|{ customer_consent_hist : "변경 이력"
+    customer ||--o| customer_body : "체형정보"
+    customer ||--|{ customer_terms_agree : "동의"
+    terms ||--o{ customer_terms_agree : "동의"
+    customer ||..|{ customer_status_hist : "상태 이력"
+    customer ||--o| customer_withdrawal : "탈퇴"

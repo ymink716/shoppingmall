@@ -73,6 +73,12 @@ erDiagram
     customer_coupon["고객 쿠폰 (미설계) customer_coupon"] {
         NUM customer_coupon_id PK "고객쿠폰번호"
     }
+    order_address_hist["주문 배송지 변경 이력 (결제·배송 회차) order_address_hist"] {
+        NUM address_hist_id PK "배송지이력번호"
+    }
+    payment["결제 (결제·배송 회차) payment"] {
+        NUM payment_id PK "결제번호"
+    }
     product_item["단품 (상품 회차) product_item"] {
         NUM item_id PK "단품번호"
     }
@@ -81,6 +87,13 @@ erDiagram
     }
     seller["판매자 (미설계) seller"] {
         NUM seller_id PK "판매자번호"
+    }
+    shipment["배송 (결제·배송 회차) shipment"] {
+        NUM shipment_id PK "배송번호"
+    }
+    shipment_item["배송상품 (결제·배송 회차) shipment_item"] {
+        NUM shipment_id PK "배송번호"
+        NUM order_item_id PK "주문상품번호"
     }
     order_item |o..o{ product_item_stock_hist : "주문 참조"
     customer ||--o{ cart_item : "장바구니"
@@ -93,3 +106,7 @@ erDiagram
     order_item ||--o{ order_item_discount : "할인 배분"
     customer_coupon |o..o{ order_item_discount : "쿠폰"
     order_item ||..|{ order_item_status_hist : "상태 이력"
+    orders ||..o{ payment : "결제"
+    order_seller ||..o{ shipment : "배송"
+    order_item ||--o{ shipment_item : "배송상품"
+    orders ||..o{ order_address_hist : "배송지 변경 이력"

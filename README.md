@@ -11,6 +11,7 @@
 | 2. 카테고리 | `modeling/02_카테고리.md` | 확정 (테이블 4개) |
 | 3. 상품 | `modeling/03_상품.md` | 확정 (테이블 14개) |
 | 4. 장바구니·주문 | `modeling/04_주문.md` | 확정 (테이블 6개) |
+| 5. 결제·배송 | `modeling/05_결제_배송.md` | 확정 (테이블 9개) |
 | ERD | `modeling/erd/` | Mermaid(`.mmd`, 회차별 + 전체), draw.io(`erd_전체.drawio`, 회차별 페이지) |
 
 ## ERD 다시 만들기

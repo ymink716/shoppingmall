@@ -1,7 +1,7 @@
 """Generate Mermaid (.mmd) and draw.io (.drawio) ERDs from the modeling docs.
 
 Usage (저장소 루트에서): python3 scripts/gen_erd.py modeling
-Reads table definitions from 01_고객.md ~ 04_주문.md and writes into <modeling_dir>/erd/.
+Reads table definitions from 01_고객.md ~ 05_결제_배송.md and writes into <modeling_dir>/erd/.
 """
 import re
 import sys
@@ -11,7 +11,7 @@ from xml.sax.saxutils import escape
 MODELING = Path(sys.argv[1])
 OUT = MODELING / "erd"
 
-DOCS = [("customer", "01_고객.md"), ("category", "02_카테고리.md"), ("product", "03_상품.md"), ("order", "04_주문.md")]
+DOCS = [("customer", "01_고객.md"), ("category", "02_카테고리.md"), ("product", "03_상품.md"), ("order", "04_주문.md"), ("payment", "05_결제_배송.md")]
 
 # ---------- parse table definitions ----------
 HEAD = re.compile(r"^#### [①-⑳]\s*(.+?)\s*`([a-z_]+)`")
@@ -151,13 +151,24 @@ R = [
     ("order_item", "||", "order_item_discount", "o{", True, "할인 배분"),
     ("customer_coupon", "|o", "order_item_discount", "o{", False, "쿠폰"),
     ("order_item", "||", "order_item_status_hist", "|{", False, "상태 이력"),
+    # 결제·배송
+    ("orders", "||", "payment", "o{", False, "결제"),
+    ("payment", "||", "payment_card", "o|", True, "카드"),
+    ("payment", "||", "payment_vbank", "o|", True, "가상계좌"),
+    ("payment", "||", "payment_easy_pay", "o|", True, "간편결제"),
+    ("payment", "||", "payment_transaction", "o{", False, "거래"),
+    ("order_seller", "||", "shipment", "o{", False, "배송"),
+    ("shipment", "||", "shipment_item", "|{", True, "배송상품"),
+    ("order_item", "||", "shipment_item", "o{", True, "배송상품"),
+    ("shipment", "||", "shipment_tracking_hist", "o{", False, "추적 이력"),
+    ("orders", "||", "order_address_hist", "o{", False, "배송지 변경 이력"),
 ]
 
 for p, _, c, _, _, _ in R:
     for t in (p, c):
         assert t in tables or t in STUBS, f"relationship refers to unknown table {t}"
 
-DOMAIN_LABEL = {"customer": "고객", "category": "카테고리", "product": "상품", "order": "주문"}
+DOMAIN_LABEL = {"customer": "고객", "category": "카테고리", "product": "상품", "order": "주문", "payment": "결제·배송"}
 
 
 def entities_for(domain):
@@ -213,6 +224,7 @@ FILL = {
     "category": ("#d5e8d4", "#82b366"),
     "product": ("#ffe6cc", "#d79b00"),
     "order": ("#e1d5e7", "#9673a6"),
+    "payment": ("#fff2cc", "#d6b656"),
     "stub": ("#f5f5f5", "#999999"),
 }
 
@@ -240,6 +252,13 @@ LAYOUT = {
         ["orders", "order_seller", "seller"],
         ["order_item", "order_item_status_hist"],
         ["order_item_discount", "customer_coupon"],
+    ],
+    "payment": [
+        ["orders", "order_address_hist"],
+        ["payment", "payment_transaction"],
+        ["payment_card", "payment_vbank", "payment_easy_pay"],
+        ["order_seller", "shipment", "shipment_tracking_hist"],
+        ["shipment_item", "order_item"],
     ],
 }
 
@@ -320,7 +339,7 @@ class Page:
                 "실선 = 식별 관계 / 점선 = 비식별 관계&lt;br&gt;"
                 "선 끝: | 필수, O 선택, 까마귀발 = M(多)&lt;br&gt;"
                 "PK 기본 키 · FK 참조 키 · UK 대체 식별자 · (?) 선택(NULL 허용)&lt;br&gt;"
-                "파랑 고객 · 초록 카테고리 · 주황 상품 · 보라 주문 · 회색 점선 = 미설계/다른 회차&lt;br&gt;"
+                "파랑 고객 · 초록 카테고리 · 주황 상품 · 보라 주문 · 노랑 결제·배송 · 회색 점선 = 미설계/다른 회차&lt;br&gt;"
                 "시스템 컬럼 4개(created_by, created_at, updated_by, updated_at)는 생략")
         self.cells.append(
             f'<mxCell id="{lid}" value="{text}" style="text;html=1;align=left;verticalAlign=top;spacing=8;'
@@ -378,17 +397,19 @@ def build_page(name, domains):
 
 def main():
     OUT.mkdir(exist_ok=True)
-    (OUT / "erd_전체.mmd").write_text(mermaid(None, "무신사 기반 쇼핑몰 ERD - 고객·카테고리·상품·주문"), encoding="utf-8")
+    (OUT / "erd_전체.mmd").write_text(mermaid(None, "무신사 기반 쇼핑몰 ERD - 고객·카테고리·상품·주문·결제·배송"), encoding="utf-8")
     (OUT / "erd_01_고객.mmd").write_text(mermaid("customer", "1회차 고객 ERD"), encoding="utf-8")
     (OUT / "erd_02_카테고리.mmd").write_text(mermaid("category", "2회차 카테고리 ERD"), encoding="utf-8")
     (OUT / "erd_03_상품.mmd").write_text(mermaid("product", "3회차 상품 ERD"), encoding="utf-8")
     (OUT / "erd_04_주문.mmd").write_text(mermaid("order", "4회차 장바구니·주문 ERD"), encoding="utf-8")
+    (OUT / "erd_05_결제_배송.mmd").write_text(mermaid("payment", "5회차 결제·배송 ERD"), encoding="utf-8")
     pages = [
-        build_page("전체", ["customer", "category", "product", "order"]),
+        build_page("전체", ["customer", "category", "product", "order", "payment"]),
         build_page("고객", ["customer"]),
         build_page("카테고리", ["category"]),
         build_page("상품", ["product"]),
         build_page("주문", ["order"]),
+        build_page("결제·배송", ["payment"]),
     ]
     (OUT / "erd_전체.drawio").write_text(
         f'<mxfile host="app.diagrams.net" type="device">{"".join(pages)}</mxfile>\n', encoding="utf-8")
